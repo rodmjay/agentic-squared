@@ -1,67 +1,320 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no" class="notranslate" data-brand="agentic">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Agentic Squared. Built from the shared parts; see README. -->
-<title>Agentic Squared · AI, set up for you by a real expert</title>
-<meta name="description" content="Human experts who set up AI agents for your business or your life. Pick your path: business or personal.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='7' width='20' height='20' fill='none' stroke='%2314213a' stroke-width='3.5'/%3E%3Crect x='20' y='4' width='9' height='9' fill='%23e8a317'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){const SUPPORTED = ["en", "es"];
+const HTML_LANG = { en: "en", es: "es-419" };
+const NAMES = { en: "English", es: "Español" };
+const KEY = "ds-lang";
+
+const ES_ZONES = new Set([
+  "America/Costa_Rica", "America/Mexico_City", "America/Monterrey", "America/Merida", "America/Cancun", "America/Chihuahua",
+  "America/Tijuana", "America/Hermosillo", "America/Mazatlan", "America/Guatemala", "America/El_Salvador", "America/Tegucigalpa",
+  "America/Managua", "America/Panama", "America/Bogota", "America/Caracas", "America/Lima", "America/Guayaquil", "America/La_Paz",
+  "America/Santiago", "America/Asuncion", "America/Montevideo", "America/Argentina/Buenos_Aires", "America/Argentina/Cordoba",
+  "America/Argentina/Mendoza", "America/Santo_Domingo", "America/Havana", "America/Puerto_Rico", "Europe/Madrid", "Atlantic/Canary",
+]);
+
+const ok = (l) => (l && SUPPORTED.includes(l) ? l : null);
+const short = (l) => String(l || "").toLowerCase().split(/[-_]/)[0];
+
+function store(lang) {
+  try { lang ? localStorage.setItem(KEY, lang) : localStorage.removeItem(KEY); } catch (e) {  }
+}
+function stored() {
+  try { return localStorage.getItem(KEY); } catch (e) { return null; }
+}
+
+function pickLang({ fallback = "en", url = globalThis.location, doc = globalThis.document, nav = globalThis.navigator } = {}) {
+  if (url) {
+    const seg = url.pathname.split("/").map(short).find((s) => SUPPORTED.includes(s));
+    const q = ok(short(new URLSearchParams(url.search).get("lang")));
+    if (q) return q;
+    if (seg) return seg;
+  }
+  const mine = ok(stored());
+  if (mine) return mine;
+  const hint = ok(short(doc?.querySelector('meta[name="lang-hint"]')?.content));
+  if (hint) return hint;
+  for (const l of nav?.languages || [nav?.language]) { const s = ok(short(l)); if (s) return s; }
+  try { if (ES_ZONES.has(Intl.DateTimeFormat().resolvedOptions().timeZone)) return "es"; } catch (e) {  }
+  return fallback;
+}
+
+function applyLang(lang, doc = globalThis.document) {
+  const root = doc.documentElement;
+  root.lang = HTML_LANG[lang] || lang;
+  root.setAttribute("translate", "no");
+  root.classList.add("notranslate");
+}
+
+function t(dict, key, vars) {
+  let v = key.split(".").reduce((o, k) => (o == null ? o : o[k]), dict);
+  if (v == null) { console.warn(`i18n: missing "${key}"`); return key; }
+  if (typeof v === "string" && vars) v = v.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+  return v;
+}
+
+function translate(dict, root = globalThis.document) {
+  root.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(dict, el.dataset.i18n); });
+  root.querySelectorAll("[data-i18n-html]").forEach((el) => { el.innerHTML = t(dict, el.dataset.i18nHtml); });
+  root.querySelectorAll("[data-i18n-attr]").forEach((el) => {
+    el.dataset.i18nAttr.split(";").forEach((pair) => {
+      const [attr, key] = pair.split(":").map((s) => s.trim());
+      if (attr && key) el.setAttribute(attr, t(dict, key));
+    });
+  });
+}
+
+function langMenu(container, { current, label = "Language", onChange } = {}) {
+  container.classList.add("ds-lang");
+  container.innerHTML = `<label><span class="ds-lang-label">${label}</span><select aria-label="${label}">${SUPPORTED
+    .map((l) => `<option value="${l}" lang="${HTML_LANG[l]}"${l === current ? " selected" : ""}>${NAMES[l]}</option>`)
+    .join("")}</select></label>`;
+  const sel = container.querySelector("select");
+  sel.addEventListener("change", () => {
+    const lang = sel.value;
+    store(lang);
+    try {
+      const u = new URL(globalThis.location.href);
+      u.searchParams.set("lang", lang);
+      history.replaceState(null, "", u);
+    } catch (e) {  }
+    onChange?.(lang);
+  });
+  return { set(lang, newLabel) { sel.value = lang; if (newLabel) { sel.setAttribute("aria-label", newLabel); container.querySelector(".ds-lang-label").textContent = newLabel; } } };
+}
+
+function compareDicts(a, b, names = ["en", "es"]) {
+  const out = [];
+  const walk = (x, y, path) => {
+    const tx = Array.isArray(x) ? "array" : typeof x, ty = Array.isArray(y) ? "array" : typeof y;
+    if (y === undefined) return out.push(`${path}: missing in ${names[1]}`);
+    if (x === undefined) return out.push(`${path}: missing in ${names[0]}`);
+    if (tx !== ty) return out.push(`${path}: ${names[0]} is ${tx}, ${names[1]} is ${ty}`);
+    if (tx === "array") {
+      if (x.length !== y.length) out.push(`${path}: ${names[0]} has ${x.length} items, ${names[1]} has ${y.length}`);
+      for (let i = 0; i < Math.max(x.length, y.length); i++) walk(x[i], y[i], `${path}[${i}]`);
+    } else if (tx === "object" && x && y) {
+      for (const k of new Set([...Object.keys(x), ...Object.keys(y)])) walk(x[k], y[k], path ? `${path}.${k}` : k);
+    } else if (tx === "string") {
+      if (!x.trim()) out.push(`${path}: empty in ${names[0]}`);
+      if (!y.trim()) out.push(`${path}: empty in ${names[1]}`);
+    }
+  };
+  walk(a, b, "");
+  return out;
+}
+
+var want=pickLang();
+try{var u=new URL(location.href),q=u.searchParams.get("lang");if(q==="en"||q==="es"){want=q;localStorage.setItem("ds-lang",q);u.searchParams.delete("lang");history.replaceState(null,"",u)}}catch(e){}if(want!=="en")location.replace("es/"+location.search+location.hash);})();</script>
+<title>Agentic Squared · Credentialed people for the steps AI can't sign</title>
+<meta name="description" content="Agentic Squared is the first agency on AgencyPro. When an AI workflow reaches a step a licensed or accountable person has to sign, like a CPA check, an attorney review or a notarization, we route it to a credentialed professional and the sign-off comes back on the record.">
+<meta name="google" content="notranslate">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8f9fc">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111416">
+<link rel="canonical" href="https://rodmjay.github.io/agentic-squared/">
+<link rel="alternate" hreflang="en" href="https://rodmjay.github.io/agentic-squared/">
+<link rel="alternate" hreflang="es-419" href="https://rodmjay.github.io/agentic-squared/es/">
+<link rel="alternate" hreflang="x-default" href="https://rodmjay.github.io/agentic-squared/">
+<meta property="og:title" content="Agentic Squared · Credentialed people for the steps AI can't sign">
+<meta property="og:description" content="Agentic Squared is the first agency on AgencyPro. When an AI workflow reaches a step a licensed or accountable person has to sign, like a CPA check, an attorney review or a notarization, we route it to a credentialed professional and the sign-off comes back on the record.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rodmjay.github.io/agentic-squared/">
+<meta property="og:locale" content="en_US">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='7' width='20' height='20' fill='none' stroke='%232747d6' stroke-width='3.5'/%3E%3Crect x='20' y='4' width='9' height='9' fill='%23e8a317'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500&family=Public+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Geist+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="ds/design-system.css">
+<link rel="stylesheet" href="home.css">
 </head>
-<body>
+<body class="ds">
 <a class="skip" href="#main">Skip to content</a>
-<div class="wrap">
-  <header class="top">
-    <a class="mark" href="index.html"><span class="sq" aria-hidden="true"></span>Agentic<sup>²</sup></a>
-    <nav aria-label="Pages"><a href="index.html" aria-current="page">Home</a><a href="business.html">For business</a><a href="personal.html">For you</a><a href="#contact">Contact</a></nav>
-  </header>
-</div>
-<main id="main">
-<div class="wrap">
-  <div class="hero hero-home">
-    <div>
-      <div class="label">Agentic Squared · AI set up by people who build it</div>
-      <h1>You know what AI can do. <em>We set it up for you.</em></h1>
-      <p class="lede">The tools are everywhere. Making them do real work, safely, in your company or your life, takes someone who has built it before. I design it, set it up, train you on it and hand it over.</p>
-      <p class="meta">21 years in software architecture · Remote · English and Spanish</p>
-    </div>
-  </div>
-  <div class="paths">
-    <a class="path corp" href="business.html">
-      <span class="tag">For business</span>
-      <h2>Your team, shipping with AI agents.</h2>
-      <p>An expert sets up Claude, MCP servers and agent-run delivery inside your standards, reviews and security controls, then trains your people.</p>
-      <span class="go">See business services →</span>
-    </a>
-    <a class="path pers" href="personal.html">
-      <span class="tag">For you</span>
-      <h2>Your own AI chief of staff.</h2>
-      <p>An expert sets up agents that run your to-dos, calendar, bills and messages, and bring you only the decisions. Private, on your own accounts.</p>
-      <span class="go">See personal setup →</span>
-    </a>
-  </div>
-</div>
-</main>
-<div class="contact" id="contact">
-  <div class="wrap">
-    <div>
-      <div class="label">Contact</div>
-      <h2>Not sure which one?</h2>
-      <p>Tell me what you want off your plate. I reply within two business days.</p>
-    </div>
-    <div class="reach">
-      <a class="li" href="mailto:agentic@squared.pro?subject=Agentic%20Squared" rel="noopener" target="_blank">Email me</a>
-    </div>
-  </div>
-</div>
 
-<div class="wrap">
-  <footer><span>© 2026 Agentic Squared, a Pro Squared company · Remote</span><span>English · Español</span></footer>
-</div>
-<script src="site.js"></script>
+<header class="bar">
+  <a class="mark" href="./" aria-label="Agentic Squared home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="20" height="20"/><rect class="sq" x="20" y="4" width="9" height="9"/></svg><span>Agentic<sup>2</sup></span></a>
+  <nav aria-label="Sections">
+    <a href="#flow">How a step works</a><a href="#kinds">Sign-offs</a><a href="#pros">For professionals</a><a href="#faq">Questions</a>
+  </nav>
+  <div class="bar-end">
+    <span class="ds-lang"><label><span class="ds-lang-label">Language</span><select id="lang" aria-label="Language" data-other="es/"><option value="en" lang="en" selected>English</option><option value="es" lang="es-419">Español</option></select></label></span>
+    <a class="ds-btn outlined sm bar-mail" href="mailto:agentic@squared.pro?subject=Agentic Squared">Email us</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero ds-container">
+    <div class="hero-copy">
+      <p class="ds-overline">The first agency on AgencyPro · Coming soon</p>
+      <h1>AI does the work. A credentialed person signs off.</h1>
+      <p class="lede">Some steps in an AI workflow need a person who puts their name on it: a CPA check, an attorney's review, a notarization. Agentic Squared is the agency for those steps. Your workflow asks, a professional with the right credential decides, and the sign-off comes back on the record.</p>
+      <div class="ds-row ctas">
+        <a class="ds-btn lg" href="#flow">See how a step works</a>
+        <a class="ds-btn outlined lg" href="mailto:agentic@squared.pro?subject=Agentic Squared">Email us</a>
+      </div>
+      <p class="hero-status"><span class="dot" aria-hidden="true"></span>Human steps aren't switched on for clients yet. We're building the agency now.</p>
+    </div>
+    <figure class="rail" aria-label="A month-end workflow, paused at a human step">
+      <figcaption class="ds-overline">A month-end workflow, paused at a human step</figcaption>
+      <ol>
+        <li class="rail-item w0"><span class="who">AI</span><span class="t">Collect statements and receipts</span><span class="s">Done</span></li><li class="rail-item w1"><span class="who">AI</span><span class="t">Reconcile the numbers</span><span class="s">Done</span></li><li class="rail-item w2"><span class="who">Person</span><span class="t">CPA check and sign-off</span><span class="s">Waiting for a person</span></li><li class="rail-item w3"><span class="who">AI</span><span class="t">Draft the invoice</span><span class="s">Next</span></li>
+      </ol>
+    </figure>
+  </section>
+
+  <section id="flow" class="band">
+    <div class="ds-container">
+      <div class="head">
+        <p class="ds-overline">How a step works</p>
+        <h2>Your workflow asks. A person decides. The record comes back.</h2>
+        <p class="ds-variant">AI prepares everything it can. At the step only a person should do, the workflow stops and asks for one, through AgencyPro.</p>
+      </div>
+      <ol class="flow">
+        <li class="step who-0"><div class="step-top"><span class="n">1</span><span class="ds-chip status chip-0">AI</span></div><h3>Your workflow reaches the step</h3><p>Your Claude, through MCP, or your own system, through the API, gets to a step a licensed or accountable person has to sign.</p></li><li class="step who-1"><div class="step-top"><span class="n">2</span><span class="ds-chip status chip-1">AI</span></div><h3>It calls request_human_step</h3><p>The request carries the kind of step, the instructions, the documents and the deadline.</p></li><li class="step who-2"><div class="step-top"><span class="n">3</span><span class="ds-chip status chip-2">Person</span></div><h3>A credentialed person claims it</h3><p>A professional who holds the credential the step needs takes it and gets the prep: documents, context and the AI's draft in one place.</p></li><li class="step who-3"><div class="step-top"><span class="n">4</span><span class="ds-chip status chip-3">Person</span></div><h3>Approve, reject or ask for changes</h3><p>They check the work against the source documents. AI did the prep; a person makes the call.</p></li><li class="step who-4"><div class="step-top"><span class="n">5</span><span class="ds-chip status chip-4">Record</span></div><h3>The signed sign-off goes on record</h3><p>Who decided, their credential, what they decided and when, recorded and signed.</p></li><li class="step who-5"><div class="step-top"><span class="n">6</span><span class="ds-chip status chip-5">AI</span></div><h3>Your workflow carries on</h3><p>The answer comes back to your workflow, which picks up where it stopped.</p></li>
+      </ol>
+      <div class="code-wrap">
+        <p class="ds-overline">The request, from your system</p>
+        <pre class="code"><code>POST /human-steps
+Idempotency-Key: 7f3c…
+
+{
+  "projectId": "prj_example_yearend",
+  "type": "cpa_review",
+  "jurisdiction": "US-UT",
+  "instructions": "Check the year-end reconciliation and sign off.",
+  "dueAt": "2026-12-04T17:00:00Z",
+  "inputs": [{
+    "kind": "document",
+    "name": "Year-end reconciliation",
+    "sha256": "9f2c…"
+  }]
+}
+
+→ 202 Accepted  { "id": "hs_91…", "status": "Queued" }</code></pre>
+        <p class="ds-supporting">Preview. Endpoint details may change before launch.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="record" class="ds-container split">
+    <div class="head">
+      <p class="ds-overline">One sign-off</p>
+      <h2>What comes back to your workflow</h2>
+      <p class="ds-variant">Pick an outcome to see the record your workflow receives.</p>
+      <div class="ds-segmented outcomes" role="group" aria-label="Outcome">
+        <button type="button" data-outcome="0" aria-pressed="true">Approve</button><button type="button" data-outcome="1" aria-pressed="false">Ask for changes</button><button type="button" data-outcome="2" aria-pressed="false">Reject</button>
+      </div>
+    </div>
+    <div class="ds-card outlined record">
+      <dl class="rec" data-rec="0">
+        <div><dt>Step</dt><dd>Year-end reconciliation, 14 pages</dd></div>
+        <div><dt>Kind</dt><dd>CPA check (non-attest)</dd></div>
+        <div class="dec"><dt>Decision</dt><dd><span class="ds-chip status d0">Approved</span></dd></div>
+        <div><dt>Decided by</dt><dd>A licensed CPA</dd></div>
+        <div><dt>When</dt><dd class="ds-figure">Dec 3, 2026, 4:12 PM</dd></div>
+        <div><dt>Note</dt><dd>Totals tie to the bank statements and the ledger.</dd></div>
+        <div><dt>Signature</dt><dd>Signed by the platform. Anyone can check it with the public key.</dd></div>
+        <div class="next"><dt>Your workflow</dt><dd>Carries on: drafts the invoice for your OK.</dd></div>
+      </dl><dl class="rec" data-rec="1" hidden>
+        <div><dt>Step</dt><dd>Year-end reconciliation, 14 pages</dd></div>
+        <div><dt>Kind</dt><dd>CPA check (non-attest)</dd></div>
+        <div class="dec"><dt>Decision</dt><dd><span class="ds-chip status d1">Changes requested</span></dd></div>
+        <div><dt>Decided by</dt><dd>A licensed CPA</dd></div>
+        <div><dt>When</dt><dd class="ds-figure">Dec 3, 2026, 4:12 PM</dd></div>
+        <div><dt>Note</dt><dd>Two receipts in March are missing. Add them and send it back.</dd></div>
+        <div><dt>Signature</dt><dd>Signed by the platform. Anyone can check it with the public key.</dd></div>
+        <div class="next"><dt>Your workflow</dt><dd>Goes back to the AI to fix, then returns to the same person.</dd></div>
+      </dl><dl class="rec" data-rec="2" hidden>
+        <div><dt>Step</dt><dd>Year-end reconciliation, 14 pages</dd></div>
+        <div><dt>Kind</dt><dd>CPA check (non-attest)</dd></div>
+        <div class="dec"><dt>Decision</dt><dd><span class="ds-chip status d2">Rejected</span></dd></div>
+        <div><dt>Decided by</dt><dd>A licensed CPA</dd></div>
+        <div><dt>When</dt><dd class="ds-figure">Dec 3, 2026, 4:12 PM</dd></div>
+        <div><dt>Note</dt><dd>The opening balance doesn't match last year's close.</dd></div>
+        <div><dt>Signature</dt><dd>Signed by the platform. Anyone can check it with the public key.</dd></div>
+        <div class="next"><dt>Your workflow</dt><dd>Stops and tells you why. Nothing moves forward.</dd></div>
+      </dl>
+      <p class="ds-supporting">Example record. No real person, client or numbers.</p>
+    </div>
+  </section>
+
+  <section id="kinds" class="band">
+    <div class="ds-container">
+      <div class="head">
+        <p class="ds-overline">Sign-offs</p>
+        <h2>The steps that need a name on them.</h2>
+        <p class="ds-variant">These match the human step types on AgencyPro. Each one goes to a person who holds the credential it needs.</p>
+      </div>
+      <ul class="kinds">
+        <li class="ds-card outlined"><div class="kind-top"><h3>CPA check</h3><span class="ds-chip status">Coming</span></div><p>A licensed CPA checks the numbers against the source and signs off on that check. It isn't an audit, review or compilation.</p></li><li class="ds-card outlined"><div class="kind-top"><h3>Attorney review</h3><span class="ds-chip status">Coming</span></div><p>A lawyer reviews an agreement or a filing and approves it or asks for changes.</p></li><li class="ds-card outlined"><div class="kind-top"><h3>Paralegal preparation</h3><span class="ds-chip status">Coming</span></div><p>Forms and filings prepared for an attorney's review.</p></li><li class="ds-card outlined"><div class="kind-top"><h3>Notarization</h3><span class="ds-chip status">Coming</span></div><p>Through a commissioned notary, under the notary's own commission and state rules.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="ds-container why">
+    <div class="head">
+      <p class="ds-overline">Why a person</p>
+      <h2>AI can prepare it. It shouldn't sign it.</h2>
+    </div>
+    <ul class="three">
+      <li><h3>Someone accountable</h3><p class="ds-variant">The person who signs holds the credential, and the record says who they are to your workflow.</p></li><li><h3>Prepared before it arrives</h3><p class="ds-variant">Documents, context and the AI's draft come together, so the professional's time goes to judgment.</p></li><li><h3>On the record</h3><p class="ds-variant">Every decision is recorded and signed, with who made it and when, so your workflow can trust it later.</p></li>
+    </ul>
+    <p class="ds-banner not-practice">Agentic Squared doesn't practice law, public accounting or notarization. We route each step to a licensed or qualified professional, who does the work under their own license and is responsible for it.</p>
+  </section>
+
+  <section class="ds-container">
+    <div class="ds-card filled platform">
+      <div>
+        <p class="ds-overline">Runs on AgencyPro</p>
+        <h2>The people side of AgencyPro.</h2>
+        <p>AgencyPro connects Claude and your systems to real people, and pays everyone who worked on a job from the same client payment. Agentic Squared is the first agency on it, and it supplies the people for human steps.</p>
+      </div>
+      <a class="ds-btn tonal" href="https://rodmjay.github.io/agency-squared/">See AgencyPro</a>
+    </div>
+  </section>
+
+  <section id="pros" class="band">
+    <div class="ds-container split">
+      <div class="head">
+        <p class="ds-overline">For professionals · coming soon</p>
+        <h2>Licensed? Take the steps AI can't sign.</h2>
+        <p class="ds-variant">Accountants, paralegals, notaries and other credentialed professionals: take review and sign-off steps from AI workflows. The prep is done before it reaches you. You make the call, and your share is paid once the client's payment clears. If that payment is reversed later, you never have to pay it back.</p>
+        <a class="ds-btn tonal" href="mailto:agentic@squared.pro?subject=Ask about joining">Ask about joining</a>
+      </div>
+      <ul class="pro-list">
+        <li><b>Work arrives prepared</b><span class="ds-variant">Documents, context and the AI's draft in one place.</span></li><li><b>Claim what fits your day</b><span class="ds-variant">Pick up the steps that match your credential.</span></li><li><b>Your decision, on the record</b><span class="ds-variant">Approve, reject or ask for changes.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="faq" class="ds-container faq">
+    <div class="head">
+      <p class="ds-overline">Questions</p>
+      <h2>The short answers.</h2>
+    </div>
+    <div class="qs">
+      <details><summary>Can I send you a step today?</summary><p class="ds-variant">Not yet. Human steps aren't switched on for clients. Email us and we'll tell you when they are.</p></details><details><summary>Do you give legal, tax or accounting advice?</summary><p class="ds-variant">No. We don't practice law, public accounting or notarization. Each step goes to a licensed or qualified professional who does the work under their own license.</p></details><details><summary>Does the AI make the decision?</summary><p class="ds-variant">No. AI prepares the work. A person reviews it and approves, rejects or asks for changes, and that decision is what goes on record.</p></details><details><summary>How does a professional get paid?</summary><p class="ds-variant">Your share shows as Pending until the client's payment fully clears: a few days for a bank transfer, 60 days for an ACH debit, about 4 months for a card. Then it's paid, for good. If the payment doesn't clear, no one is paid and no one owes anything.</p></details><details><summary>What do I need on my side?</summary><p class="ds-variant">A workflow in Claude with the AgencyPro connector (local, invite-only for now), or your own system calling its REST API and webhooks. AgencyPro is in a private beta, by invitation.</p></details>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="ds-container contact-in">
+      <div>
+        <p class="ds-overline">Contact</p>
+        <h2>Building a workflow that needs a sign-off?</h2>
+        <p>Tell us the step and who has to sign it. We reply within two business days.</p>
+      </div>
+      <a class="ds-btn lg" href="mailto:agentic@squared.pro?subject=Agentic Squared">agentic@squared.pro</a>
+    </div>
+  </section>
+</main>
+
+<footer class="ds-container foot">
+  <span>© 2026 Agentic Squared, a Pro Squared company</span>
+  <span class="ds-variant">Human steps are coming soon. Examples on this page use made-up records.</span>
+</footer>
+<script src="home.js" defer></script>
 </body>
 </html>

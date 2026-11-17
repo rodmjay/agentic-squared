@@ -1,0 +1,244 @@
+{
+  "meta": {
+    "title": "Agentic Squared · Credentialed people for the steps AI can't sign",
+    "description": "Agentic Squared is the first agency on AgencyPro. When an AI workflow reaches a step a licensed or accountable person has to sign, like a CPA check, an attorney review or a notarization, we route it to a credentialed professional and the sign-off comes back on the record.",
+    "ogLocale": "en_US"
+  },
+  "nav": {
+    "label": "Sections",
+    "skip": "Skip to content",
+    "flow": "How a step works",
+    "kinds": "Sign-offs",
+    "pros": "For professionals",
+    "faq": "Questions",
+    "contact": "Email us",
+    "language": "Language",
+    "home": "Agentic Squared home"
+  },
+  "hero": {
+    "eyebrow": "The first agency on AgencyPro · Coming soon",
+    "title": "AI does the work. A credentialed person signs off.",
+    "body": "Some steps in an AI workflow need a person who puts their name on it: a CPA check, an attorney's review, a notarization. Agentic Squared is the agency for those steps. Your workflow asks, a professional with the right credential decides, and the sign-off comes back on the record.",
+    "cta": "See how a step works",
+    "ctaSecondary": "Email us",
+    "status": "Human steps aren't switched on for clients yet. We're building the agency now.",
+    "rail": {
+      "label": "A month-end workflow, paused at a human step",
+      "items": [
+        {
+          "who": "AI",
+          "title": "Collect statements and receipts",
+          "state": "Done"
+        },
+        {
+          "who": "AI",
+          "title": "Reconcile the numbers",
+          "state": "Done"
+        },
+        {
+          "who": "Person",
+          "title": "CPA check and sign-off",
+          "state": "Waiting for a person"
+        },
+        {
+          "who": "AI",
+          "title": "Draft the invoice",
+          "state": "Next"
+        }
+      ]
+    }
+  },
+  "flow": {
+    "eyebrow": "How a step works",
+    "title": "Your workflow asks. A person decides. The record comes back.",
+    "body": "AI prepares everything it can. At the step only a person should do, the workflow stops and asks for one, through AgencyPro.",
+    "stepLabel": "Step {n}",
+    "steps": [
+      {
+        "who": "AI",
+        "title": "Your workflow reaches the step",
+        "body": "Your Claude, through MCP, or your own system, through the API, gets to a step a licensed or accountable person has to sign."
+      },
+      {
+        "who": "AI",
+        "title": "It calls request_human_step",
+        "body": "The request carries the kind of step, the instructions, the documents and the deadline."
+      },
+      {
+        "who": "Person",
+        "title": "A credentialed person claims it",
+        "body": "A professional who holds the credential the step needs takes it and gets the prep: documents, context and the AI's draft in one place."
+      },
+      {
+        "who": "Person",
+        "title": "Approve, reject or ask for changes",
+        "body": "They check the work against the source documents. AI did the prep; a person makes the call."
+      },
+      {
+        "who": "Record",
+        "title": "The signed sign-off goes on record",
+        "body": "Who decided, their credential, what they decided and when, recorded and signed."
+      },
+      {
+        "who": "AI",
+        "title": "Your workflow carries on",
+        "body": "The answer comes back to your workflow, which picks up where it stopped."
+      }
+    ],
+    "codeLabel": "The request, from your system",
+    "codeNote": "Preview. Endpoint details may change before launch.",
+    "codeInstructions": "Check the year-end reconciliation and sign off.",
+    "codeDoc": "Year-end reconciliation"
+  },
+  "record": {
+    "eyebrow": "One sign-off",
+    "title": "What comes back to your workflow",
+    "body": "Pick an outcome to see the record your workflow receives.",
+    "outcomesLabel": "Outcome",
+    "fieldStep": "Step",
+    "fieldKind": "Kind",
+    "fieldDecision": "Decision",
+    "fieldBy": "Decided by",
+    "fieldWhen": "When",
+    "fieldNote": "Note",
+    "fieldNext": "Your workflow",
+    "stepValue": "Year-end reconciliation, 14 pages",
+    "kindValue": "CPA check (non-attest)",
+    "byValue": "A licensed CPA",
+    "whenValue": "Dec 3, 2026, 4:12 PM",
+    "outcomes": [
+      {
+        "label": "Approve",
+        "decision": "Approved",
+        "note": "Totals tie to the bank statements and the ledger.",
+        "next": "Carries on: drafts the invoice for your OK."
+      },
+      {
+        "label": "Ask for changes",
+        "decision": "Changes requested",
+        "note": "Two receipts in March are missing. Add them and send it back.",
+        "next": "Goes back to the AI to fix, then returns to the same person."
+      },
+      {
+        "label": "Reject",
+        "decision": "Rejected",
+        "note": "The opening balance doesn't match last year's close.",
+        "next": "Stops and tells you why. Nothing moves forward."
+      }
+    ],
+    "example": "Example record. No real person, client or numbers.",
+    "fieldSig": "Signature",
+    "sigValue": "Signed by the platform. Anyone can check it with the public key."
+  },
+  "kinds": {
+    "eyebrow": "Sign-offs",
+    "title": "The steps that need a name on them.",
+    "body": "These match the human step types on AgencyPro. Each one goes to a person who holds the credential it needs.",
+    "coming": "Coming",
+    "items": [
+      {
+        "title": "CPA check",
+        "body": "A licensed CPA checks the numbers against the source and signs off on that check. It isn't an audit, review or compilation."
+      },
+      {
+        "title": "Attorney review",
+        "body": "A lawyer reviews an agreement or a filing and approves it or asks for changes."
+      },
+      {
+        "title": "Paralegal preparation",
+        "body": "Forms and filings prepared for an attorney's review."
+      },
+      {
+        "title": "Notarization",
+        "body": "Through a commissioned notary, under the notary's own commission and state rules."
+      }
+    ]
+  },
+  "why": {
+    "eyebrow": "Why a person",
+    "title": "AI can prepare it. It shouldn't sign it.",
+    "items": [
+      {
+        "title": "Someone accountable",
+        "body": "The person who signs holds the credential, and the record says who they are to your workflow."
+      },
+      {
+        "title": "Prepared before it arrives",
+        "body": "Documents, context and the AI's draft come together, so the professional's time goes to judgment."
+      },
+      {
+        "title": "On the record",
+        "body": "Every decision is recorded and signed, with who made it and when, so your workflow can trust it later."
+      }
+    ],
+    "notPractice": "Agentic Squared doesn't practice law, public accounting or notarization. We route each step to a licensed or qualified professional, who does the work under their own license and is responsible for it."
+  },
+  "platform": {
+    "eyebrow": "Runs on AgencyPro",
+    "title": "The people side of AgencyPro.",
+    "body": "AgencyPro connects Claude and your systems to real people, and pays everyone who worked on a job from the same client payment. Agentic Squared is the first agency on it, and it supplies the people for human steps.",
+    "cta": "See AgencyPro"
+  },
+  "pros": {
+    "eyebrow": "For professionals · coming soon",
+    "title": "Licensed? Take the steps AI can't sign.",
+    "body": "Accountants, paralegals, notaries and other credentialed professionals: take review and sign-off steps from AI workflows. The prep is done before it reaches you. You make the call, and your share is paid once the client's payment clears. If that payment is reversed later, you never have to pay it back.",
+    "items": [
+      {
+        "title": "Work arrives prepared",
+        "body": "Documents, context and the AI's draft in one place."
+      },
+      {
+        "title": "Claim what fits your day",
+        "body": "Pick up the steps that match your credential."
+      },
+      {
+        "title": "Your decision, on the record",
+        "body": "Approve, reject or ask for changes."
+      }
+    ],
+    "cta": "Ask about joining"
+  },
+  "faq": {
+    "eyebrow": "Questions",
+    "title": "The short answers.",
+    "items": [
+      {
+        "q": "Can I send you a step today?",
+        "a": "Not yet. Human steps aren't switched on for clients. Email us and we'll tell you when they are."
+      },
+      {
+        "q": "Do you give legal, tax or accounting advice?",
+        "a": "No. We don't practice law, public accounting or notarization. Each step goes to a licensed or qualified professional who does the work under their own license."
+      },
+      {
+        "q": "Does the AI make the decision?",
+        "a": "No. AI prepares the work. A person reviews it and approves, rejects or asks for changes, and that decision is what goes on record."
+      },
+      {
+        "q": "How does a professional get paid?",
+        "a": "Your share shows as Pending until the client's payment fully clears: a few days for a bank transfer, 60 days for an ACH debit, about 4 months for a card. Then it's paid, for good. If the payment doesn't clear, no one is paid and no one owes anything."
+      },
+      {
+        "q": "What do I need on my side?",
+        "a": "A workflow in Claude with the AgencyPro connector (local, invite-only for now), or your own system calling its REST API and webhooks. AgencyPro is in a private beta, by invitation."
+      }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Building a workflow that needs a sign-off?",
+    "body": "Tell us the step and who has to sign it. We reply within two business days.",
+    "cta": "agentic@squared.pro",
+    "subject": "Agentic Squared"
+  },
+  "footer": {
+    "company": "© 2026 Agentic Squared, a Pro Squared company",
+    "note": "Human steps are coming soon. Examples on this page use made-up records."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This page isn't here. The home page is.",
+    "cta": "Go to the home page"
+  }
+}

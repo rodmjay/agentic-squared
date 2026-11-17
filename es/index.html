@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="es-419" translate="no" class="notranslate" data-brand="agentic">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){const SUPPORTED = ["en", "es"];
+const HTML_LANG = { en: "en", es: "es-419" };
+const NAMES = { en: "English", es: "Español" };
+const KEY = "ds-lang";
+
+const ES_ZONES = new Set([
+  "America/Costa_Rica", "America/Mexico_City", "America/Monterrey", "America/Merida", "America/Cancun", "America/Chihuahua",
+  "America/Tijuana", "America/Hermosillo", "America/Mazatlan", "America/Guatemala", "America/El_Salvador", "America/Tegucigalpa",
+  "America/Managua", "America/Panama", "America/Bogota", "America/Caracas", "America/Lima", "America/Guayaquil", "America/La_Paz",
+  "America/Santiago", "America/Asuncion", "America/Montevideo", "America/Argentina/Buenos_Aires", "America/Argentina/Cordoba",
+  "America/Argentina/Mendoza", "America/Santo_Domingo", "America/Havana", "America/Puerto_Rico", "Europe/Madrid", "Atlantic/Canary",
+]);
+
+const ok = (l) => (l && SUPPORTED.includes(l) ? l : null);
+const short = (l) => String(l || "").toLowerCase().split(/[-_]/)[0];
+
+function store(lang) {
+  try { lang ? localStorage.setItem(KEY, lang) : localStorage.removeItem(KEY); } catch (e) {  }
+}
+function stored() {
+  try { return localStorage.getItem(KEY); } catch (e) { return null; }
+}
+
+function pickLang({ fallback = "en", url = globalThis.location, doc = globalThis.document, nav = globalThis.navigator } = {}) {
+  if (url) {
+    const seg = url.pathname.split("/").map(short).find((s) => SUPPORTED.includes(s));
+    const q = ok(short(new URLSearchParams(url.search).get("lang")));
+    if (q) return q;
+    if (seg) return seg;
+  }
+  const mine = ok(stored());
+  if (mine) return mine;
+  const hint = ok(short(doc?.querySelector('meta[name="lang-hint"]')?.content));
+  if (hint) return hint;
+  for (const l of nav?.languages || [nav?.language]) { const s = ok(short(l)); if (s) return s; }
+  try { if (ES_ZONES.has(Intl.DateTimeFormat().resolvedOptions().timeZone)) return "es"; } catch (e) {  }
+  return fallback;
+}
+
+function applyLang(lang, doc = globalThis.document) {
+  const root = doc.documentElement;
+  root.lang = HTML_LANG[lang] || lang;
+  root.setAttribute("translate", "no");
+  root.classList.add("notranslate");
+}
+
+function t(dict, key, vars) {
+  let v = key.split(".").reduce((o, k) => (o == null ? o : o[k]), dict);
+  if (v == null) { console.warn(`i18n: missing "${key}"`); return key; }
+  if (typeof v === "string" && vars) v = v.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+  return v;
+}
+
+function translate(dict, root = globalThis.document) {
+  root.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(dict, el.dataset.i18n); });
+  root.querySelectorAll("[data-i18n-html]").forEach((el) => { el.innerHTML = t(dict, el.dataset.i18nHtml); });
+  root.querySelectorAll("[data-i18n-attr]").forEach((el) => {
+    el.dataset.i18nAttr.split(";").forEach((pair) => {
+      const [attr, key] = pair.split(":").map((s) => s.trim());
+      if (attr && key) el.setAttribute(attr, t(dict, key));
+    });
+  });
+}
+
+function langMenu(container, { current, label = "Language", onChange } = {}) {
+  container.classList.add("ds-lang");
+  container.innerHTML = `<label><span class="ds-lang-label">${label}</span><select aria-label="${label}">${SUPPORTED
+    .map((l) => `<option value="${l}" lang="${HTML_LANG[l]}"${l === current ? " selected" : ""}>${NAMES[l]}</option>`)
+    .join("")}</select></label>`;
+  const sel = container.querySelector("select");
+  sel.addEventListener("change", () => {
+    const lang = sel.value;
+    store(lang);
+    try {
+      const u = new URL(globalThis.location.href);
+      u.searchParams.set("lang", lang);
+      history.replaceState(null, "", u);
+    } catch (e) {  }
+    onChange?.(lang);
+  });
+  return { set(lang, newLabel) { sel.value = lang; if (newLabel) { sel.setAttribute("aria-label", newLabel); container.querySelector(".ds-lang-label").textContent = newLabel; } } };
+}
+
+function compareDicts(a, b, names = ["en", "es"]) {
+  const out = [];
+  const walk = (x, y, path) => {
+    const tx = Array.isArray(x) ? "array" : typeof x, ty = Array.isArray(y) ? "array" : typeof y;
+    if (y === undefined) return out.push(`${path}: missing in ${names[1]}`);
+    if (x === undefined) return out.push(`${path}: missing in ${names[0]}`);
+    if (tx !== ty) return out.push(`${path}: ${names[0]} is ${tx}, ${names[1]} is ${ty}`);
+    if (tx === "array") {
+      if (x.length !== y.length) out.push(`${path}: ${names[0]} has ${x.length} items, ${names[1]} has ${y.length}`);
+      for (let i = 0; i < Math.max(x.length, y.length); i++) walk(x[i], y[i], `${path}[${i}]`);
+    } else if (tx === "object" && x && y) {
+      for (const k of new Set([...Object.keys(x), ...Object.keys(y)])) walk(x[k], y[k], path ? `${path}.${k}` : k);
+    } else if (tx === "string") {
+      if (!x.trim()) out.push(`${path}: empty in ${names[0]}`);
+      if (!y.trim()) out.push(`${path}: empty in ${names[1]}`);
+    }
+  };
+  walk(a, b, "");
+  return out;
+}
+
+var want=pickLang();
+try{var u=new URL(location.href),q=u.searchParams.get("lang");if(q==="en"||q==="es"){want=q;localStorage.setItem("ds-lang",q);u.searchParams.delete("lang");history.replaceState(null,"",u)}}catch(e){}if(want!=="es")location.replace("../"+location.search+location.hash);})();</script>
+<title>Agentic Squared · Personas acreditadas para los pasos que la IA no puede firmar</title>
+<meta name="description" content="Agentic Squared es la primera agencia en AgencyPro. Cuando un flujo de trabajo con IA llega a un paso que debe firmar una persona con licencia o responsable, como una verificación de un contador público, una revisión de un abogado o una certificación notarial, lo enviamos a un profesional acreditado y la aprobación vuelve registrada.">
+<meta name="google" content="notranslate">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8f9fc">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111416">
+<link rel="canonical" href="https://rodmjay.github.io/agentic-squared/es/">
+<link rel="alternate" hreflang="en" href="https://rodmjay.github.io/agentic-squared/">
+<link rel="alternate" hreflang="es-419" href="https://rodmjay.github.io/agentic-squared/es/">
+<link rel="alternate" hreflang="x-default" href="https://rodmjay.github.io/agentic-squared/">
+<meta property="og:title" content="Agentic Squared · Personas acreditadas para los pasos que la IA no puede firmar">
+<meta property="og:description" content="Agentic Squared es la primera agencia en AgencyPro. Cuando un flujo de trabajo con IA llega a un paso que debe firmar una persona con licencia o responsable, como una verificación de un contador público, una revisión de un abogado o una certificación notarial, lo enviamos a un profesional acreditado y la aprobación vuelve registrada.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rodmjay.github.io/agentic-squared/es/">
+<meta property="og:locale" content="es_419">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='7' width='20' height='20' fill='none' stroke='%232747d6' stroke-width='3.5'/%3E%3Crect x='20' y='4' width='9' height='9' fill='%23e8a317'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Geist+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../ds/design-system.css">
+<link rel="stylesheet" href="../home.css">
+</head>
+<body class="ds">
+<a class="skip" href="#main">Ir al contenido</a>
+
+<header class="bar">
+  <a class="mark" href="./" aria-label="Inicio de Agentic Squared"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="20" height="20"/><rect class="sq" x="20" y="4" width="9" height="9"/></svg><span>Agentic<sup>2</sup></span></a>
+  <nav aria-label="Secciones">
+    <a href="#flow">Cómo funciona un paso</a><a href="#kinds">Aprobaciones</a><a href="#pros">Para profesionales</a><a href="#faq">Preguntas</a>
+  </nav>
+  <div class="bar-end">
+    <span class="ds-lang"><label><span class="ds-lang-label">Idioma</span><select id="lang" aria-label="Idioma" data-other="../"><option value="en" lang="en">English</option><option value="es" lang="es-419" selected>Español</option></select></label></span>
+    <a class="ds-btn outlined sm bar-mail" href="mailto:agentic@squared.pro?subject=Agentic Squared">Escríbanos</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero ds-container">
+    <div class="hero-copy">
+      <p class="ds-overline">La primera agencia en AgencyPro · Muy pronto</p>
+      <h1>La IA hace el trabajo. Una persona acreditada lo aprueba.</h1>
+      <p class="lede">Algunos pasos de un flujo de trabajo con IA necesitan a una persona que responda con su nombre: la verificación de un contador público, la de un abogado, una certificación notarial. Agentic Squared es la agencia para esos pasos. Su flujo de trabajo lo pide, un profesional con la acreditación necesaria decide, y la aprobación vuelve registrada.</p>
+      <div class="ds-row ctas">
+        <a class="ds-btn lg" href="#flow">Vea cómo funciona un paso</a>
+        <a class="ds-btn outlined lg" href="mailto:agentic@squared.pro?subject=Agentic Squared">Escríbanos</a>
+      </div>
+      <p class="hero-status"><span class="dot" aria-hidden="true"></span>Los pasos humanos todavía no están activos para clientes. Estamos armando la agencia ahora.</p>
+    </div>
+    <figure class="rail" aria-label="Un flujo de cierre de mes, detenido en un paso humano">
+      <figcaption class="ds-overline">Un flujo de cierre de mes, detenido en un paso humano</figcaption>
+      <ol>
+        <li class="rail-item w0"><span class="who">IA</span><span class="t">Reunir estados de cuenta y recibos</span><span class="s">Listo</span></li><li class="rail-item w1"><span class="who">IA</span><span class="t">Conciliar las cifras</span><span class="s">Listo</span></li><li class="rail-item w2"><span class="who">Persona</span><span class="t">Verificación y aprobación de un contador público</span><span class="s">Espera a una persona</span></li><li class="rail-item w3"><span class="who">IA</span><span class="t">Preparar la factura</span><span class="s">Siguiente</span></li>
+      </ol>
+    </figure>
+  </section>
+
+  <section id="flow" class="band">
+    <div class="ds-container">
+      <div class="head">
+        <p class="ds-overline">Cómo funciona un paso</p>
+        <h2>Su flujo de trabajo pide. Una persona decide. El registro vuelve.</h2>
+        <p class="ds-variant">La IA prepara todo lo que puede. En el paso que solo debe hacer una persona, el flujo de trabajo se detiene y pide una, a través de AgencyPro.</p>
+      </div>
+      <ol class="flow">
+        <li class="step who-0"><div class="step-top"><span class="n">1</span><span class="ds-chip status chip-0">IA</span></div><h3>Su flujo de trabajo llega al paso</h3><p>Su Claude, a través de MCP, o su propio sistema, a través de la API, llega a un paso que debe firmar una persona con licencia o responsable.</p></li><li class="step who-1"><div class="step-top"><span class="n">2</span><span class="ds-chip status chip-1">IA</span></div><h3>Llama a request_human_step</h3><p>La solicitud lleva el tipo de paso, las instrucciones, los documentos y la fecha límite.</p></li><li class="step who-2"><div class="step-top"><span class="n">3</span><span class="ds-chip status chip-2">Persona</span></div><h3>Lo toma una persona acreditada</h3><p>Un profesional con la acreditación que el paso necesita lo toma y recibe la preparación: documentos, contexto y el borrador de la IA en un solo lugar.</p></li><li class="step who-3"><div class="step-top"><span class="n">4</span><span class="ds-chip status chip-3">Persona</span></div><h3>Aprueba, rechaza o pide cambios</h3><p>Compara el trabajo con los documentos de origen. La IA hizo la preparación; una persona toma la decisión.</p></li><li class="step who-4"><div class="step-top"><span class="n">5</span><span class="ds-chip status chip-4">Registro</span></div><h3>La aprobación firmada queda registrada</h3><p>Quién decidió, su acreditación, qué decidió y cuándo, registrado y firmado.</p></li><li class="step who-5"><div class="step-top"><span class="n">6</span><span class="ds-chip status chip-5">IA</span></div><h3>Su flujo de trabajo continúa</h3><p>La respuesta vuelve a su flujo de trabajo, que sigue donde se detuvo.</p></li>
+      </ol>
+      <div class="code-wrap">
+        <p class="ds-overline">La solicitud, desde su sistema</p>
+        <pre class="code"><code>POST /human-steps
+Idempotency-Key: 7f3c…
+
+{
+  "projectId": "prj_example_yearend",
+  "type": "cpa_review",
+  "jurisdiction": "US-UT",
+  "instructions": "Verifique la conciliación de fin de año y apruébela.",
+  "dueAt": "2026-12-04T17:00:00Z",
+  "inputs": [{
+    "kind": "document",
+    "name": "Conciliación de fin de año",
+    "sha256": "9f2c…"
+  }]
+}
+
+→ 202 Accepted  { "id": "hs_91…", "status": "Queued" }</code></pre>
+        <p class="ds-supporting">Vista previa. Los detalles del endpoint pueden cambiar antes del lanzamiento.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="record" class="ds-container split">
+    <div class="head">
+      <p class="ds-overline">Una aprobación</p>
+      <h2>Lo que vuelve a su flujo de trabajo</h2>
+      <p class="ds-variant">Elija un resultado para ver el registro que recibe su flujo de trabajo.</p>
+      <div class="ds-segmented outcomes" role="group" aria-label="Resultado">
+        <button type="button" data-outcome="0" aria-pressed="true">Aprobar</button><button type="button" data-outcome="1" aria-pressed="false">Pedir cambios</button><button type="button" data-outcome="2" aria-pressed="false">Rechazar</button>
+      </div>
+    </div>
+    <div class="ds-card outlined record">
+      <dl class="rec" data-rec="0">
+        <div><dt>Paso</dt><dd>Conciliación de fin de año, 14 páginas</dd></div>
+        <div><dt>Tipo</dt><dd>Verificación de un contador público (sin aseguramiento)</dd></div>
+        <div class="dec"><dt>Decisión</dt><dd><span class="ds-chip status d0">Aprobado</span></dd></div>
+        <div><dt>Decidió</dt><dd>Un contador público con licencia</dd></div>
+        <div><dt>Cuándo</dt><dd class="ds-figure">3 dic 2026, 16:12</dd></div>
+        <div><dt>Nota</dt><dd>Los totales coinciden con los estados bancarios y el libro mayor.</dd></div>
+        <div><dt>Firma</dt><dd>Firmado por la plataforma. Cualquiera puede verificarlo con la clave pública.</dd></div>
+        <div class="next"><dt>Su flujo de trabajo</dt><dd>Continúa: prepara la factura para su visto bueno.</dd></div>
+      </dl><dl class="rec" data-rec="1" hidden>
+        <div><dt>Paso</dt><dd>Conciliación de fin de año, 14 páginas</dd></div>
+        <div><dt>Tipo</dt><dd>Verificación de un contador público (sin aseguramiento)</dd></div>
+        <div class="dec"><dt>Decisión</dt><dd><span class="ds-chip status d1">Cambios solicitados</span></dd></div>
+        <div><dt>Decidió</dt><dd>Un contador público con licencia</dd></div>
+        <div><dt>Cuándo</dt><dd class="ds-figure">3 dic 2026, 16:12</dd></div>
+        <div><dt>Nota</dt><dd>Faltan dos recibos de marzo. Agréguelos y vuelva a enviarla.</dd></div>
+        <div><dt>Firma</dt><dd>Firmado por la plataforma. Cualquiera puede verificarlo con la clave pública.</dd></div>
+        <div class="next"><dt>Su flujo de trabajo</dt><dd>Vuelve a la IA para corregirla y regresa a la misma persona.</dd></div>
+      </dl><dl class="rec" data-rec="2" hidden>
+        <div><dt>Paso</dt><dd>Conciliación de fin de año, 14 páginas</dd></div>
+        <div><dt>Tipo</dt><dd>Verificación de un contador público (sin aseguramiento)</dd></div>
+        <div class="dec"><dt>Decisión</dt><dd><span class="ds-chip status d2">Rechazado</span></dd></div>
+        <div><dt>Decidió</dt><dd>Un contador público con licencia</dd></div>
+        <div><dt>Cuándo</dt><dd class="ds-figure">3 dic 2026, 16:12</dd></div>
+        <div><dt>Nota</dt><dd>El saldo inicial no coincide con el cierre del año pasado.</dd></div>
+        <div><dt>Firma</dt><dd>Firmado por la plataforma. Cualquiera puede verificarlo con la clave pública.</dd></div>
+        <div class="next"><dt>Su flujo de trabajo</dt><dd>Se detiene y le explica por qué. Nada avanza.</dd></div>
+      </dl>
+      <p class="ds-supporting">Registro de ejemplo. Sin personas, clientes ni cifras reales.</p>
+    </div>
+  </section>
+
+  <section id="kinds" class="band">
+    <div class="ds-container">
+      <div class="head">
+        <p class="ds-overline">Aprobaciones</p>
+        <h2>Los pasos que necesitan un nombre.</h2>
+        <p class="ds-variant">Coinciden con los tipos de pasos humanos de AgencyPro. Cada uno va a una persona con la acreditación que necesita.</p>
+      </div>
+      <ul class="kinds">
+        <li class="ds-card outlined"><div class="kind-top"><h3>Verificación de un contador público</h3><span class="ds-chip status">Próximamente</span></div><p>Un contador público con licencia verifica las cifras contra la fuente y aprueba esa verificación. No es una auditoría, revisión ni compilación.</p></li><li class="ds-card outlined"><div class="kind-top"><h3>Revisión de un abogado</h3><span class="ds-chip status">Próximamente</span></div><p>Un abogado revisa un contrato o un trámite y lo aprueba o pide cambios.</p></li><li class="ds-card outlined"><div class="kind-top"><h3>Preparación por un asistente legal</h3><span class="ds-chip status">Próximamente</span></div><p>Formularios y trámites preparados para que los revise un abogado.</p></li><li class="ds-card outlined"><div class="kind-top"><h3>Certificación notarial</h3><span class="ds-chip status">Próximamente</span></div><p>A través de un notario con nombramiento vigente, bajo su propio nombramiento y las reglas de su estado.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="ds-container why">
+    <div class="head">
+      <p class="ds-overline">Por qué una persona</p>
+      <h2>La IA puede prepararlo. No debería firmarlo.</h2>
+    </div>
+    <ul class="three">
+      <li><h3>Alguien que responde</h3><p class="ds-variant">Quien firma tiene la acreditación, y el registro le dice a su flujo de trabajo quién es.</p></li><li><h3>Preparado antes de llegar</h3><p class="ds-variant">Los documentos, el contexto y el borrador de la IA llegan juntos, así el tiempo del profesional se dedica a decidir.</p></li><li><h3>Registrado</h3><p class="ds-variant">Cada decisión queda registrada y firmada, con quién la tomó y cuándo, para que su flujo de trabajo pueda confiar en ella después.</p></li>
+    </ul>
+    <p class="ds-banner not-practice">Agentic Squared no ejerce la abogacía, la contaduría pública ni la función notarial. Enviamos cada paso a un profesional con licencia o calificado, que hace el trabajo bajo su propia licencia y responde por él.</p>
+  </section>
+
+  <section class="ds-container">
+    <div class="ds-card filled platform">
+      <div>
+        <p class="ds-overline">Funciona con AgencyPro</p>
+        <h2>El lado humano de AgencyPro.</h2>
+        <p>AgencyPro conecta a Claude y a sus sistemas con personas reales, y paga a todos los que trabajaron en un encargo con el mismo pago del cliente. Agentic Squared es la primera agencia en la plataforma, y aporta las personas para los pasos humanos.</p>
+      </div>
+      <a class="ds-btn tonal" href="https://rodmjay.github.io/agency-squared/es/">Conozca AgencyPro</a>
+    </div>
+  </section>
+
+  <section id="pros" class="band">
+    <div class="ds-container split">
+      <div class="head">
+        <p class="ds-overline">Para profesionales · muy pronto</p>
+        <h2>¿Tiene licencia? Tome los pasos que la IA no puede firmar.</h2>
+        <p class="ds-variant">Contadores, asistentes legales, notarios y otros profesionales acreditados: tomen pasos de revisión y aprobación de flujos de trabajo con IA. La preparación ya está hecha cuando le llega. Usted toma la decisión, y su parte se paga cuando el pago del cliente se acredita. Si ese pago se revierte después, nunca tendrá que devolverla.</p>
+        <a class="ds-btn tonal" href="mailto:agentic@squared.pro?subject=Pregunte cómo sumarse">Pregunte cómo sumarse</a>
+      </div>
+      <ul class="pro-list">
+        <li><b>El trabajo llega preparado</b><span class="ds-variant">Documentos, contexto y el borrador de la IA en un solo lugar.</span></li><li><b>Tome lo que encaje en su día</b><span class="ds-variant">Elija los pasos que corresponden a su acreditación.</span></li><li><b>Su decisión, registrada</b><span class="ds-variant">Apruebe, rechace o pida cambios.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="faq" class="ds-container faq">
+    <div class="head">
+      <p class="ds-overline">Preguntas</p>
+      <h2>Las respuestas cortas.</h2>
+    </div>
+    <div class="qs">
+      <details><summary>¿Puedo enviarles un paso hoy?</summary><p class="ds-variant">Todavía no. Los pasos humanos no están activos para clientes. Escríbanos y le avisaremos cuando lo estén.</p></details><details><summary>¿Dan asesoría legal, fiscal o contable?</summary><p class="ds-variant">No. No ejercemos la abogacía, la contaduría pública ni la función notarial. Cada paso va a un profesional con licencia o calificado que hace el trabajo bajo su propia licencia.</p></details><details><summary>¿La IA toma la decisión?</summary><p class="ds-variant">No. La IA prepara el trabajo. Una persona lo revisa y lo aprueba, lo rechaza o pide cambios, y esa decisión es la que queda registrada.</p></details><details><summary>¿Cómo cobra un profesional?</summary><p class="ds-variant">Su parte aparece como Pendiente hasta que el pago del cliente se acredita por completo: unos días para una transferencia bancaria, 60 días para un débito ACH y unos 4 meses para una tarjeta. Entonces se paga, de forma definitiva. Si el pago no se acredita, nadie cobra y nadie debe nada.</p></details><details><summary>¿Qué necesito de mi lado?</summary><p class="ds-variant">Un flujo de trabajo en Claude con el conector de AgencyPro (local y solo con invitación por ahora), o su propio sistema llamando a su API REST y sus webhooks. AgencyPro está en una beta privada, solo con invitación.</p></details>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="ds-container contact-in">
+      <div>
+        <p class="ds-overline">Contacto</p>
+        <h2>¿Arma un flujo de trabajo que necesita una aprobación?</h2>
+        <p>Cuéntenos el paso y quién tiene que firmarlo. Respondemos en dos días hábiles.</p>
+      </div>
+      <a class="ds-btn lg" href="mailto:agentic@squared.pro?subject=Agentic Squared">agentic@squared.pro</a>
+    </div>
+  </section>
+</main>
+
+<footer class="ds-container foot">
+  <span>© 2026 Agentic Squared, una empresa de Pro Squared</span>
+  <span class="ds-variant">Los pasos humanos llegan muy pronto. Los ejemplos de esta página usan registros inventados.</span>
+</footer>
+<script src="../home.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+{
+  "meta": {
+    "title": "Agentic Squared · Personas acreditadas para los pasos que la IA no puede firmar",
+    "description": "Agentic Squared es la primera agencia en AgencyPro. Cuando un flujo de trabajo con IA llega a un paso que debe firmar una persona con licencia o responsable, como una verificación de un contador público, una revisión de un abogado o una certificación notarial, lo enviamos a un profesional acreditado y la aprobación vuelve registrada.",
+    "ogLocale": "es_419"
+  },
+  "nav": {
+    "label": "Secciones",
+    "skip": "Ir al contenido",
+    "flow": "Cómo funciona un paso",
+    "kinds": "Aprobaciones",
+    "pros": "Para profesionales",
+    "faq": "Preguntas",
+    "contact": "Escríbanos",
+    "language": "Idioma",
+    "home": "Inicio de Agentic Squared"
+  },
+  "hero": {
+    "eyebrow": "La primera agencia en AgencyPro · Muy pronto",
+    "title": "La IA hace el trabajo. Una persona acreditada lo aprueba.",
+    "body": "Algunos pasos de un flujo de trabajo con IA necesitan a una persona que responda con su nombre: la verificación de un contador público, la de un abogado, una certificación notarial. Agentic Squared es la agencia para esos pasos. Su flujo de trabajo lo pide, un profesional con la acreditación necesaria decide, y la aprobación vuelve registrada.",
+    "cta": "Vea cómo funciona un paso",
+    "ctaSecondary": "Escríbanos",
+    "status": "Los pasos humanos todavía no están activos para clientes. Estamos armando la agencia ahora.",
+    "rail": {
+      "label": "Un flujo de cierre de mes, detenido en un paso humano",
+      "items": [
+        {
+          "who": "IA",
+          "title": "Reunir estados de cuenta y recibos",
+          "state": "Listo"
+        },
+        {
+          "who": "IA",
+          "title": "Conciliar las cifras",
+          "state": "Listo"
+        },
+        {
+          "who": "Persona",
+          "title": "Verificación y aprobación de un contador público",
+          "state": "Espera a una persona"
+        },
+        {
+          "who": "IA",
+          "title": "Preparar la factura",
+          "state": "Siguiente"
+        }
+      ]
+    }
+  },
+  "flow": {
+    "eyebrow": "Cómo funciona un paso",
+    "title": "Su flujo de trabajo pide. Una persona decide. El registro vuelve.",
+    "body": "La IA prepara todo lo que puede. En el paso que solo debe hacer una persona, el flujo de trabajo se detiene y pide una, a través de AgencyPro.",
+    "stepLabel": "Paso {n}",
+    "steps": [
+      {
+        "who": "IA",
+        "title": "Su flujo de trabajo llega al paso",
+        "body": "Su Claude, a través de MCP, o su propio sistema, a través de la API, llega a un paso que debe firmar una persona con licencia o responsable."
+      },
+      {
+        "who": "IA",
+        "title": "Llama a request_human_step",
+        "body": "La solicitud lleva el tipo de paso, las instrucciones, los documentos y la fecha límite."
+      },
+      {
+        "who": "Persona",
+        "title": "Lo toma una persona acreditada",
+        "body": "Un profesional con la acreditación que el paso necesita lo toma y recibe la preparación: documentos, contexto y el borrador de la IA en un solo lugar."
+      },
+      {
+        "who": "Persona",
+        "title": "Aprueba, rechaza o pide cambios",
+        "body": "Compara el trabajo con los documentos de origen. La IA hizo la preparación; una persona toma la decisión."
+      },
+      {
+        "who": "Registro",
+        "title": "La aprobación firmada queda registrada",
+        "body": "Quién decidió, su acreditación, qué decidió y cuándo, registrado y firmado."
+      },
+      {
+        "who": "IA",
+        "title": "Su flujo de trabajo continúa",
+        "body": "La respuesta vuelve a su flujo de trabajo, que sigue donde se detuvo."
+      }
+    ],
+    "codeLabel": "La solicitud, desde su sistema",
+    "codeNote": "Vista previa. Los detalles del endpoint pueden cambiar antes del lanzamiento.",
+    "codeInstructions": "Verifique la conciliación de fin de año y apruébela.",
+    "codeDoc": "Conciliación de fin de año"
+  },
+  "record": {
+    "eyebrow": "Una aprobación",
+    "title": "Lo que vuelve a su flujo de trabajo",
+    "body": "Elija un resultado para ver el registro que recibe su flujo de trabajo.",
+    "outcomesLabel": "Resultado",
+    "fieldStep": "Paso",
+    "fieldKind": "Tipo",
+    "fieldDecision": "Decisión",
+    "fieldBy": "Decidió",
+    "fieldWhen": "Cuándo",
+    "fieldNote": "Nota",
+    "fieldNext": "Su flujo de trabajo",
+    "stepValue": "Conciliación de fin de año, 14 páginas",
+    "kindValue": "Verificación de un contador público (sin aseguramiento)",
+    "byValue": "Un contador público con licencia",
+    "whenValue": "3 dic 2026, 16:12",
+    "outcomes": [
+      {
+        "label": "Aprobar",
+        "decision": "Aprobado",
+        "note": "Los totales coinciden con los estados bancarios y el libro mayor.",
+        "next": "Continúa: prepara la factura para su visto bueno."
+      },
+      {
+        "label": "Pedir cambios",
+        "decision": "Cambios solicitados",
+        "note": "Faltan dos recibos de marzo. Agréguelos y vuelva a enviarla.",
+        "next": "Vuelve a la IA para corregirla y regresa a la misma persona."
+      },
+      {
+        "label": "Rechazar",
+        "decision": "Rechazado",
+        "note": "El saldo inicial no coincide con el cierre del año pasado.",
+        "next": "Se detiene y le explica por qué. Nada avanza."
+      }
+    ],
+    "example": "Registro de ejemplo. Sin personas, clientes ni cifras reales.",
+    "fieldSig": "Firma",
+    "sigValue": "Firmado por la plataforma. Cualquiera puede verificarlo con la clave pública."
+  },
+  "kinds": {
+    "eyebrow": "Aprobaciones",
+    "title": "Los pasos que necesitan un nombre.",
+    "body": "Coinciden con los tipos de pasos humanos de AgencyPro. Cada uno va a una persona con la acreditación que necesita.",
+    "coming": "Próximamente",
+    "items": [
+      {
+        "title": "Verificación de un contador público",
+        "body": "Un contador público con licencia verifica las cifras contra la fuente y aprueba esa verificación. No es una auditoría, revisión ni compilación."
+      },
+      {
+        "title": "Revisión de un abogado",
+        "body": "Un abogado revisa un contrato o un trámite y lo aprueba o pide cambios."
+      },
+      {
+        "title": "Preparación por un asistente legal",
+        "body": "Formularios y trámites preparados para que los revise un abogado."
+      },
+      {
+        "title": "Certificación notarial",
+        "body": "A través de un notario con nombramiento vigente, bajo su propio nombramiento y las reglas de su estado."
+      }
+    ]
+  },
+  "why": {
+    "eyebrow": "Por qué una persona",
+    "title": "La IA puede prepararlo. No debería firmarlo.",
+    "items": [
+      {
+        "title": "Alguien que responde",
+        "body": "Quien firma tiene la acreditación, y el registro le dice a su flujo de trabajo quién es."
+      },
+      {
+        "title": "Preparado antes de llegar",
+        "body": "Los documentos, el contexto y el borrador de la IA llegan juntos, así el tiempo del profesional se dedica a decidir."
+      },
+      {
+        "title": "Registrado",
+        "body": "Cada decisión queda registrada y firmada, con quién la tomó y cuándo, para que su flujo de trabajo pueda confiar en ella después."
+      }
+    ],
+    "notPractice": "Agentic Squared no ejerce la abogacía, la contaduría pública ni la función notarial. Enviamos cada paso a un profesional con licencia o calificado, que hace el trabajo bajo su propia licencia y responde por él."
+  },
+  "platform": {
+    "eyebrow": "Funciona con AgencyPro",
+    "title": "El lado humano de AgencyPro.",
+    "body": "AgencyPro conecta a Claude y a sus sistemas con personas reales, y paga a todos los que trabajaron en un encargo con el mismo pago del cliente. Agentic Squared es la primera agencia en la plataforma, y aporta las personas para los pasos humanos.",
+    "cta": "Conozca AgencyPro"
+  },
+  "pros": {
+    "eyebrow": "Para profesionales · muy pronto",
+    "title": "¿Tiene licencia? Tome los pasos que la IA no puede firmar.",
+    "body": "Contadores, asistentes legales, notarios y otros profesionales acreditados: tomen pasos de revisión y aprobación de flujos de trabajo con IA. La preparación ya está hecha cuando le llega. Usted toma la decisión, y su parte se paga cuando el pago del cliente se acredita. Si ese pago se revierte después, nunca tendrá que devolverla.",
+    "items": [
+      {
+        "title": "El trabajo llega preparado",
+        "body": "Documentos, contexto y el borrador de la IA en un solo lugar."
+      },
+      {
+        "title": "Tome lo que encaje en su día",
+        "body": "Elija los pasos que corresponden a su acreditación."
+      },
+      {
+        "title": "Su decisión, registrada",
+        "body": "Apruebe, rechace o pida cambios."
+      }
+    ],
+    "cta": "Pregunte cómo sumarse"
+  },
+  "faq": {
+    "eyebrow": "Preguntas",
+    "title": "Las respuestas cortas.",
+    "items": [
+      {
+        "q": "¿Puedo enviarles un paso hoy?",
+        "a": "Todavía no. Los pasos humanos no están activos para clientes. Escríbanos y le avisaremos cuando lo estén."
+      },
+      {
+        "q": "¿Dan asesoría legal, fiscal o contable?",
+        "a": "No. No ejercemos la abogacía, la contaduría pública ni la función notarial. Cada paso va a un profesional con licencia o calificado que hace el trabajo bajo su propia licencia."
+      },
+      {
+        "q": "¿La IA toma la decisión?",
+        "a": "No. La IA prepara el trabajo. Una persona lo revisa y lo aprueba, lo rechaza o pide cambios, y esa decisión es la que queda registrada."
+      },
+      {
+        "q": "¿Cómo cobra un profesional?",
+        "a": "Su parte aparece como Pendiente hasta que el pago del cliente se acredita por completo: unos días para una transferencia bancaria, 60 días para un débito ACH y unos 4 meses para una tarjeta. Entonces se paga, de forma definitiva. Si el pago no se acredita, nadie cobra y nadie debe nada."
+      },
+      {
+        "q": "¿Qué necesito de mi lado?",
+        "a": "Un flujo de trabajo en Claude con el conector de AgencyPro (local y solo con invitación por ahora), o su propio sistema llamando a su API REST y sus webhooks. AgencyPro está en una beta privada, solo con invitación."
+      }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Contacto",
+    "title": "¿Arma un flujo de trabajo que necesita una aprobación?",
+    "body": "Cuéntenos el paso y quién tiene que firmarlo. Respondemos en dos días hábiles.",
+    "cta": "agentic@squared.pro",
+    "subject": "Agentic Squared"
+  },
+  "footer": {
+    "company": "© 2026 Agentic Squared, una empresa de Pro Squared",
+    "note": "Los pasos humanos llegan muy pronto. Los ejemplos de esta página usan registros inventados."
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "body": "Esta página no está aquí. La de inicio, sí.",
+    "cta": "Ir al inicio"
+  }
+}
