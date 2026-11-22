@@ -72,7 +72,7 @@ writeFileSync("404.html", `<!doctype html>
 <html lang="en" translate="no" class="notranslate" data-brand="agentic">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(nf("en").title)} · Agentic Squared</title><meta name="robots" content="noindex"><meta name="google" content="notranslate">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Public+Sans:wght@400;500&display=swap">
+<link rel="stylesheet" href="/agentic-squared/ds/fonts.css">
 <link rel="stylesheet" href="/agentic-squared/ds/design-system.css"><link rel="stylesheet" href="/agentic-squared/home.css"></head>
 <body class="ds"><main class="ds-container nf">
 <section lang="en"><h1>${esc(nf("en").title)}</h1><p class="ds-variant">${esc(nf("en").body)}</p><a class="ds-btn" href="/agentic-squared/">${esc(nf("en").cta)}</a></section>

@@ -4,4 +4,4 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 : "${DS_COPY:?set DS_COPY to the design system copy script (installed outside this repo)}"
-node "$DS_COPY" --public --brand agentic ds brands/agentic/design-system.css i18n.js check-i18n.mjs
+node "$DS_COPY" --public --brand agentic --fonts ds brands/agentic/design-system.css i18n.js check-i18n.mjs consent.global.js

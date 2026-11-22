@@ -19,9 +19,7 @@
 <meta property="og:url" content="{{@canonical}}">
 <meta property="og:locale" content="{{meta.ogLocale}}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='7' width='20' height='20' fill='none' stroke='%232747d6' stroke-width='3.5'/%3E%3Crect x='20' y='4' width='9' height='9' fill='%23e8a317'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Geist+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="{{@root}}ds/fonts.css">
 <link rel="stylesheet" href="{{@root}}ds/design-system.css">
 <link rel="stylesheet" href="{{@root}}home.css">
 </head>
@@ -191,7 +189,10 @@ Idempotency-Key: 7f3c…
 <footer class="ds-container foot">
   <span>{{footer.company}}</span>
   <span class="ds-variant">{{footer.note}}</span>
+  <a href="#" data-consent-open></a>
 </footer>
+<script src="{{@root}}ds/consent.global.js"></script>
+<script>DSConsent.consent({ lang: document.documentElement.lang.slice(0,2), site: "agentic-squared", bannerVersion: "1", policyVersion: "2026-11-22", necessary: [], registry: [] });</script>
 <script src="{{@root}}home.js" defer></script>
 </body>
 </html>
